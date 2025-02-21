@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Camera } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Alert, AlertDescription } from '../components/ui/alert';
 
 const FoodAnalysisApp = () => {
   const [tg, setTg] = useState(null);
-  const [photoUrl, setPhotoUrl] = useState(null);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -20,37 +17,18 @@ const FoodAnalysisApp = () => {
       }
     };
     document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
   }, []);
 
-  const handlePhotoCapture = async () => {
+  const handleTakePhoto = async () => {
     if (!tg) return;
-    
-    try {
-      // Запускаем нативную камеру Telegram
-      const photo = await tg.showPopup({
-        title: "Фото блюда",
-        message: "Сделайте фото или выберите из галереи",
-        buttons: [
-          {text: "Камера", type: "default"},
-          {text: "Галерея", type: "default"},
-          {text: "Отмена", type: "cancel"}
-        ]
-      });
 
-      // После получения фото отправляем его в бот
-      if (photo) {
-        tg.sendData(JSON.stringify({
-          type: 'photo',
-          photo: photo
-        }));
-      }
-    } catch (error) {
-      console.error('Error capturing photo:', error);
-    }
+    // Используем Telegram API для отправки фото напрямую в бот
+    tg.sendData(JSON.stringify({
+      action: 'requestPhoto'
+    }));
+
+    // Закрываем WebApp, так как фото будет обрабатываться в боте
+    tg.close();
   };
 
   return (
@@ -60,27 +38,17 @@ const FoodAnalysisApp = () => {
       </header>
 
       <main className="flex-1 p-4">
-        <div className="max-w-md mx-auto space-y-4">
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg">Анализ блюда</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <button 
-                onClick={handlePhotoCapture}
-                className="w-full flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg transition-colors"
-              >
-                <Camera className="w-6 h-6" />
-                <span>Сделать фото блюда</span>
-              </button>
-            </CardContent>
-          </Card>
-
-          {photoUrl && (
-            <div className="mt-4">
-              <img src={photoUrl} alt="Food" className="w-full rounded-lg" />
-            </div>
-          )}
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-semibold mb-4">Анализ блюда</h2>
+            <button 
+              onClick={handleTakePhoto}
+              className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg transition-colors"
+            >
+              <Camera className="w-6 h-6" />
+              <span>Сделать фото блюда</span>
+            </button>
+          </div>
         </div>
       </main>
     </div>
